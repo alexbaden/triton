@@ -297,7 +297,7 @@ class CodeGenerator(ast.NodeVisitor):
                     #   @triton.jit def fn(x: tl.constexpr = GLOBAL): ...
                     or self.visiting_arg_default_value  #
                     or os.environ.get("TRITON_ALLOW_NON_CONSTEXPR_GLOBALS", "0") == "1"):
-                return val
+                return val            
             raise NameError(
                 textwrap.dedent(f"""\
                 Cannot access global variable {name} from within @jit'ed
@@ -538,6 +538,8 @@ class CodeGenerator(ast.NodeVisitor):
         if _is_triton_tensor(rhs):
             reverse_method_name = re.sub(r"__(.*)__", r"__r\1__", method_name)
             return getattr(rhs, reverse_method_name)(lhs, _builder=self.builder)
+        if _is_constexpr(rhs) and not _is_constexpr(lhs):
+            return getattr(lhs, method_name)(_unwrap_if_constexpr(rhs))
         return getattr(lhs, method_name)(rhs)
 
     def visit_BinOp(self, node):
