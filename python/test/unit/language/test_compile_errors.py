@@ -281,6 +281,45 @@ def test_constexpr_global_var_access():
     triton.compile(triton.compiler.ASTSource(fn=kernel, signature={}, constants={}))
 
 
+CONSTEXPR_GLOBAL_STR = tl.constexpr("test")
+
+@triton.jit
+def returns_branched_str_compare_constexpr(N):
+    if N == CONSTEXPR_GLOBAL_STR:
+        return tl.arange(0, 4) 
+    else:
+        return tl.arange(0, 8)
+
+def test_constexpr_global_str_compare():
+
+    @triton.jit
+    def kernel(N: tl.constexpr):
+        a = returns_branched_str_compare_constexpr(N)
+        a + tl.arange(0, 4)
+
+    # No error.
+    triton.compile(triton.compiler.ASTSource(fn=kernel, signature={}, constants={"N": "test"}))
+
+CONSTEXPR_GLOBAL_INT = tl.constexpr(10)
+
+@triton.jit
+def returns_branched_int_compare_constexpr(N):
+    if N == CONSTEXPR_GLOBAL_INT:
+        return tl.arange(0, 4) 
+    else:
+        return tl.arange(0, 8)
+
+def test_constexpr_global_int_compare():
+
+    @triton.jit
+    def kernel(N: int):
+        a = returns_branched_int_compare_constexpr(N)
+        a + tl.arange(0, 4)
+
+    # No error.
+    triton.compile(triton.compiler.ASTSource(fn=kernel, signature={'N': 'i32'}, constants={'N': 10}))
+
+
 TYPE_ALIAS = tl.pointer_type(tl.int32)
 
 
