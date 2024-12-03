@@ -76,6 +76,10 @@ public:
   virtual LogicalResult
   verifyDotOpEncodingCompatibility(Operation *op, Attribute operandEncodingA,
                                    Attribute operandEncodingB) const = 0;
+
+  virtual LogicalResult
+  verifyTensorLayouts(Operation *op, Attribute layout,
+                      function_ref<InFlightDiagnostic()> emitError) const = 0;
 };
 
 } // namespace triton
